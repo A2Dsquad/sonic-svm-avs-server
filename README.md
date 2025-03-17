@@ -371,5 +371,3 @@ Flags:
 #### Conclusion
 The Aggregator is a crucial part of the AVS, ensuring reliable task fetching, queuing, and operator coordination in the ETH-to-Sonic SVM bridging process.
 
-## Python Binding
-
