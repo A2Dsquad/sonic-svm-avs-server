@@ -7,14 +7,14 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/aptos-labs/aptos-go-sdk"
+	"github.com/solana-labs/solana-go-sdk"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
 
 const (
-	flagAptosNetwork          = "aptos-network"
+	flagSolanaNetwork          = "solana-network"
 	flagAggregatorConfig      = "aggregator-config"
 	flagAggregatorAccountPath = "aggregator-account"
 )
@@ -44,9 +44,9 @@ func Start(logger *zap.Logger) *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Get all the flags
-			network, err := cmd.Flags().GetString(flagAptosNetwork)
+			network, err := cmd.Flags().GetString(flagSolanaNetwork)
 			if err != nil {
-				return errors.Wrap(err, flagAptosNetwork)
+				return errors.Wrap(err, flagSolanaNetwork)
 			}
 			aggregatorConfigPath, err := cmd.Flags().GetString(flagAggregatorConfig)
 			if err != nil {
@@ -87,7 +87,7 @@ func Start(logger *zap.Logger) *cobra.Command {
 		},
 	}
 	cmd.Flags().String(flagAggregatorConfig, "config/aggregator-config.json", "see the example at config/aggregator-example.json")
-	cmd.Flags().String(flagAptosNetwork, "devnet", "choose network to connect to: mainnet, testnet, devnet, localnet")
+	cmd.Flags().String(flagSolanaNetwork, "devnet", "choose network to connect to: mainnet, testnet, devnet, localnet")
 	return cmd
 }
 
@@ -107,7 +107,7 @@ func CreateAggregatorConfig(logger *zap.Logger) *cobra.Command {
 				return errors.Wrap(err, flagAggregatorConfig)
 			}
 
-			avsAddress := aptos.AccountAddress{}
+			avsAddress := solana.AccountAddress{}
 			if err := avsAddress.ParseStringRelaxed(args[0]); err != nil {
 				return fmt.Errorf("failed to parse avs address: %s", err)
 			}
@@ -138,7 +138,7 @@ func CreateAggregatorConfig(logger *zap.Logger) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().String(flagAggregatorAccountPath, ".aptos/config.yaml", "default for the account derivation")
+	cmd.Flags().String(flagAggregatorAccountPath, ".solana/config.yaml", "default for the account derivation")
 	cmd.Flags().String(flagAggregatorConfig, "config/aggregator-config.json", "path for the config file of aggregator")
 	return cmd
 }
@@ -167,17 +167,17 @@ func loadAggregatorConfig(filename string) (*AggregatorConfig, error) {
 	return &config, nil
 }
 
-func extractNetwork(network string) (aptos.NetworkConfig, error) {
+func extractNetwork(network string) (solana.NetworkConfig, error) {
 	switch network {
 	case "devnet":
-		return aptos.DevnetConfig, nil
+		return solana.DevnetConfig, nil
 	case "localnet":
-		return aptos.LocalnetConfig, nil
+		return solana.LocalnetConfig, nil
 	case "testnet":
-		return aptos.TestnetConfig, nil
+		return solana.TestnetConfig, nil
 	case "mainnet":
-		return aptos.MainnetConfig, nil
+		return solana.MainnetConfig, nil
 	default:
-		return aptos.NetworkConfig{}, fmt.Errorf("choose one of: mainnet, testnet, devnet, localnet")
+		return solana.NetworkConfig{}, fmt.Errorf("choose one of: mainnet, testnet, devnet, localnet")
 	}
 }

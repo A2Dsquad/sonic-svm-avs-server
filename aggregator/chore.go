@@ -7,19 +7,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/bcs"
+	"github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/bcs"
 )
 
 const ChoreInterval = 1 * time.Minute
 
 func (agg *Aggregator) DoChore(ctx context.Context) error {
-	client, err := aptos.NewClient(agg.Network)
+	client, err := solana.NewClient(agg.Network)
 	if err != nil {
-		return fmt.Errorf("failed to create aptos client: %v", err)
+		return fmt.Errorf("failed to create solana client: %v", err)
 	}
 
-	avsAddress := aptos.AccountAddress{}
+	avsAddress := solana.AccountAddress{}
 	err = avsAddress.ParseStringRelaxed(agg.AvsAddress)
 	if err != nil {
 		return fmt.Errorf("failed to parse avs address: %v", err)
@@ -44,10 +44,10 @@ func (agg *Aggregator) DoChore(ctx context.Context) error {
 			}
 		}
 
-		var operatorAddresses = make([][]aptos.AccountAddress, quorumCount)
+		var operatorAddresses = make([][]solana.AccountAddress, quorumCount)
 		// Get list operator for each quorum
 		for i, operatorsIds := range operatorsIdPerQuorum {
-			operatorAddresses[i] = make([]aptos.AccountAddress, len(operatorsIds))
+			operatorAddresses[i] = make([]solana.AccountAddress, len(operatorsIds))
 			for j := 0; j < len(operatorsIds); j++ {
 				opId, ok := operatorsIds[j].(string)
 				if !ok {
@@ -62,7 +62,7 @@ func (agg *Aggregator) DoChore(ctx context.Context) error {
 				if err != nil {
 					return fmt.Errorf("can not get operator address %v", err)
 				}
-				addr := aptos.AccountAddress{}
+				addr := solana.AccountAddress{}
 				err = addr.ParseStringRelaxed(operatorAddr)
 				if err != nil {
 					return fmt.Errorf("can not ParseStringRelaxed: %v", err)
@@ -81,14 +81,14 @@ func (agg *Aggregator) DoChore(ctx context.Context) error {
 	}
 }
 
-func QuorumCount(client *aptos.Client, contract aptos.AccountAddress) (uint8, error) {
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+func QuorumCount(client *solana.Client, contract solana.AccountAddress) (uint8, error) {
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "registry_coordinator",
 		},
 		Function: "quorum_count",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args:     [][]byte{},
 	}
 
@@ -100,7 +100,7 @@ func QuorumCount(client *aptos.Client, contract aptos.AccountAddress) (uint8, er
 	return uint8(count), nil
 }
 
-func GetOperatorListAtTimestamp(client *aptos.Client, contract aptos.AccountAddress, quorum uint8, timestamp uint64) ([]interface{}, error) {
+func GetOperatorListAtTimestamp(client *solana.Client, contract solana.AccountAddress, quorum uint8, timestamp uint64) ([]interface{}, error) {
 	quorumBcs, err := bcs.SerializeU8(quorum)
 	if err != nil {
 		return nil, err
@@ -109,13 +109,13 @@ func GetOperatorListAtTimestamp(client *aptos.Client, contract aptos.AccountAddr
 	if err != nil {
 		return nil, err
 	}
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "index_registry",
 		},
 		Function: "get_operator_list_at_timestamp",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			quorumBcs, timestampBcs,
 		},
@@ -129,18 +129,18 @@ func GetOperatorListAtTimestamp(client *aptos.Client, contract aptos.AccountAddr
 	return operatorList, nil
 }
 
-func GetOperatorAddress(client *aptos.Client, contract aptos.AccountAddress, operatorId []byte) (string, error) {
+func GetOperatorAddress(client *solana.Client, contract solana.AccountAddress, operatorId []byte) (string, error) {
 	operatorIdBcs, err := bcs.SerializeBytes(operatorId)
 	if err != nil {
 		return "", err
 	}
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "registry_coordinator",
 		},
 		Function: "get_operator_address",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			operatorIdBcs,
 		},
@@ -155,13 +155,13 @@ func GetOperatorAddress(client *aptos.Client, contract aptos.AccountAddress, ope
 }
 
 func UpdateOperatorsForQuorum(
-	client *aptos.Client,
-	aggregatorAccount *aptos.Account,
+	client *solana.Client,
+	aggregatorAccount *solana.Account,
 	contractAddr string,
 	quorumNumbers uint8,
-	addresses [][]aptos.AccountAddress,
+	addresses [][]solana.AccountAddress,
 ) error {
-	contract := aptos.AccountAddress{}
+	contract := solana.AccountAddress{}
 	err := contract.ParseStringRelaxed(contractAddr)
 	if err != nil {
 		panic("Failed to parse address:" + err.Error())
@@ -187,13 +187,13 @@ func UpdateOperatorsForQuorum(
 		panic("Failed to serialize addresses:" + err.Error())
 	}
 
-	payload := aptos.EntryFunction{
-		Module: aptos.ModuleId{
+	payload := solana.EntryFunction{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "registry_coordinator",
 		},
 		Function: "update_operators_for_quorum",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			quorumSerializer.ToBytes(), addressesSerializer.ToBytes(),
 		},
@@ -201,7 +201,7 @@ func UpdateOperatorsForQuorum(
 
 	// Build transaction
 	rawTxn, err := client.BuildTransaction(aggregatorAccount.AccountAddress(),
-		aptos.TransactionPayload{Payload: &payload})
+		solana.TransactionPayload{Payload: &payload})
 	if err != nil {
 		panic("Failed to build transaction:" + err.Error())
 	}

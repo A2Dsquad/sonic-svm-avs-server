@@ -9,15 +9,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/bcs"
+	"github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/bcs"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 const taskQueueSize = 100
 
-func NewAggregator(aggregatorConfig AggregatorConfig, logger *zap.Logger, network aptos.NetworkConfig) (*Aggregator, error) {
+func NewAggregator(aggregatorConfig AggregatorConfig, logger *zap.Logger, network solana.NetworkConfig) (*Aggregator, error) {
 	aggegator_account, err := SignerFromConfig(aggregatorConfig.AccountConfig.AccountPath, aggregatorConfig.AccountConfig.Profile)
 	if err != nil {
 		return &Aggregator{}, errors.Wrap(err, "Failed to create aggregator account")
@@ -78,12 +78,12 @@ func (agg *Aggregator) Start(ctx context.Context) error {
 }
 
 func (agg *Aggregator) FetchTasks(ctx context.Context) error {
-	client, err := aptos.NewClient(agg.Network)
+	client, err := solana.NewClient(agg.Network)
 	if err != nil {
-		return fmt.Errorf("failed to create aptos client: %v", err)
+		return fmt.Errorf("failed to create solana client: %v", err)
 	}
 
-	avs := aptos.AccountAddress{}
+	avs := solana.AccountAddress{}
 	err = avs.ParseStringRelaxed(agg.AvsAddress)
 	if err != nil {
 		return fmt.Errorf("error parsing avs address: %v", err)
@@ -111,7 +111,7 @@ func (agg *Aggregator) FetchTasks(ctx context.Context) error {
 	}
 }
 
-func (agg *Aggregator) QueueTask(ctx context.Context, avs aptos.AccountAddress, client *aptos.Client, start uint64, end uint64) error {
+func (agg *Aggregator) QueueTask(ctx context.Context, avs solana.AccountAddress, client *solana.Client, start uint64, end uint64) error {
 	for i := start + 1; i <= end; i++ {
 		task, err := LoadTaskById(client, avs, i)
 		if err != nil {
@@ -141,18 +141,18 @@ func (agg *Aggregator) QueueTask(ctx context.Context, avs aptos.AccountAddress, 
 	return nil
 }
 
-func LoadTaskById(client *aptos.Client, contract aptos.AccountAddress, taskId uint64) (map[string]interface{}, error) {
+func LoadTaskById(client *solana.Client, contract solana.AccountAddress, taskId uint64) (map[string]interface{}, error) {
 	taskIdBcs, err := bcs.SerializeU64(taskId)
 	if err != nil {
 		return nil, fmt.Errorf("can not SerializeU64: %v", err)
 	}
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "service_manager",
 		},
 		Function: "task_by_id",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			taskIdBcs,
 		},
@@ -165,14 +165,14 @@ func LoadTaskById(client *aptos.Client, contract aptos.AccountAddress, taskId ui
 	return task, nil
 }
 
-func LatestTaskCount(client *aptos.Client, contract aptos.AccountAddress) (uint64, error) {
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+func LatestTaskCount(client *solana.Client, contract solana.AccountAddress) (uint64, error) {
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "service_manager",
 		},
 		Function: "task_count",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args:     [][]byte{},
 	}
 

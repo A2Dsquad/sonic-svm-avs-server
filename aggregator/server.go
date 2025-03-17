@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/bcs"
+	"github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/bcs"
 	"go.uber.org/zap"
 )
 
@@ -56,9 +56,9 @@ func (agg *Aggregator) RespondTask(signedTaskResponse SignedTaskResponse, reply 
 
 func (agg *Aggregator) processTaskResponse(signedTaskResponse SignedTaskResponse) error {
 	fmt.Println("test")
-	client, err := aptos.NewClient(agg.Network)
+	client, err := solana.NewClient(agg.Network)
 	if err != nil {
-		return fmt.Errorf("failed to create aptos client: %v", err)
+		return fmt.Errorf("failed to create solana client: %v", err)
 	}
 
 	var timestamp uint64
@@ -71,7 +71,7 @@ func (agg *Aggregator) processTaskResponse(signedTaskResponse SignedTaskResponse
 			return fmt.Errorf("error converting string to uint64: %v", err)
 		}
 	} else {
-		avs := aptos.AccountAddress{}
+		avs := solana.AccountAddress{}
 		err := avs.ParseStringRelaxed(agg.AvsAddress)
 		if err != nil {
 			return fmt.Errorf("error parsing avs address while loading task: %v", err)
@@ -172,15 +172,15 @@ func (agg *Aggregator) processTaskResponse(signedTaskResponse SignedTaskResponse
 // signer_sigs: vector<vector<u8>>,
 
 func RespondToAvs(
-	client *aptos.Client,
-	aggregatorAccount *aptos.Account,
+	client *solana.Client,
+	aggregatorAccount *solana.Account,
 	contractAddr string,
 	taskId uint64,
 	signature []BytesStruct,
 	pubkey []BytesStruct,
 	responses []U128Struct,
 ) error {
-	contract := aptos.AccountAddress{}
+	contract := solana.AccountAddress{}
 	err := contract.ParseStringRelaxed(contractAddr)
 	if err != nil {
 		panic("Failed to parse address:" + err.Error())
@@ -198,13 +198,13 @@ func RespondToAvs(
 
 	responseSerializer := bcs.Serializer{}
 	bcs.SerializeSequence(responses, &responseSerializer)
-	payload := aptos.EntryFunction{
-		Module: aptos.ModuleId{
+	payload := solana.EntryFunction{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "service_manager",
 		},
 		Function: "respond_to_task",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			taskIdBcs, responseSerializer.ToBytes(), pubkeySerializer.ToBytes(), sigSerializer.ToBytes(),
 		},
@@ -212,7 +212,7 @@ func RespondToAvs(
 
 	// Build transaction
 	rawTxn, err := client.BuildTransaction(aggregatorAccount.AccountAddress(),
-		aptos.TransactionPayload{Payload: &payload})
+		solana.TransactionPayload{Payload: &payload})
 	if err != nil {
 		panic("Failed to build transaction:" + err.Error())
 	}
@@ -251,7 +251,7 @@ func RespondToAvs(
 // signer_pubkeys: vector<vector<u8>>,
 // signer_sigs: vector<vector<u8>>,
 func CheckSignatures(
-	client *aptos.Client,
+	client *solana.Client,
 	contractAddr string,
 	quorumNumbers uint8,
 	referenceTimestamp uint64,
@@ -259,7 +259,7 @@ func CheckSignatures(
 	pubkey []BytesStruct,
 	signature []BytesStruct,
 ) (uint64, uint64, error) {
-	contract := aptos.AccountAddress{}
+	contract := solana.AccountAddress{}
 	err := contract.ParseStringRelaxed(contractAddr)
 	if err != nil {
 		panic("Failed to parse address:" + err.Error())
@@ -286,13 +286,13 @@ func CheckSignatures(
 	msgHashesSerializer := bcs.Serializer{}
 	bcs.SerializeSequence(msgHashes, &msgHashesSerializer)
 
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "bls_sig_checker",
 		},
 		Function: "check_signatures",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			quorumSerializer.ToBytes(),
 			timestampBcs,
@@ -320,13 +320,13 @@ func CheckSignatures(
 }
 
 func GetMsgHashes(
-	client *aptos.Client,
+	client *solana.Client,
 	contractAddr string,
 	taskId uint64,
 	responses []U128Struct,
 	pubkey []BytesStruct,
 ) ([]interface{}, error) {
-	contract := aptos.AccountAddress{}
+	contract := solana.AccountAddress{}
 	err := contract.ParseStringRelaxed(contractAddr)
 	if err != nil {
 		panic("Failed to parse address:" + err.Error())
@@ -343,13 +343,13 @@ func GetMsgHashes(
 	responseSerializer := bcs.Serializer{}
 	bcs.SerializeSequence(responses, &responseSerializer)
 
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "service_manager",
 		},
 		Function: "get_msg_hashes",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			taskIdBcs,
 			responseSerializer.ToBytes(),

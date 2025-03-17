@@ -2,7 +2,7 @@ module avs
 
 require (
 	github.com/Layr-Labs/eigensdk-go v0.1.12
-	github.com/aptos-labs/aptos-go-sdk v0.7.0
+	github.com/gagliardetto/solana-go v1.12.0
 	github.com/ethereum/go-ethereum v1.14.5
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.1
@@ -41,7 +41,6 @@ require (
 )
 
 replace (
-	github.com/aptos-labs/aptos-go-sdk => github.com/decentrio/aptos-go-sdk v0.0.0-20241007104016-43369f521d0e
 	github.com/cosmos/crypto => github.com/decentrio/crypto v0.1.3-0.20240927062649-7a497320b85c
 	github.com/decentrio/oracle-avs => ./..
 )

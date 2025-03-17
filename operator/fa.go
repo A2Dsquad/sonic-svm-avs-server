@@ -4,24 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 
-	aptos "github.com/aptos-labs/aptos-go-sdk"
+	solana "github.com/solana-labs/solana-go-sdk"
 )
 
 // TODO
 const FAContract = "0x24f4512994b08ea6f6914a776670d0e06541b2e72ffcbf32a279be4c8eb4e845"
 
 func GetMetadata(
-	client *aptos.Client,
+	client *solana.Client,
 ) Metadata {
-	contractAcc := aptos.AccountAddress{}
+	contractAcc := solana.AccountAddress{}
 	err := contractAcc.ParseStringRelaxed(FAContract)
 	if err != nil {
 		panic("Could not ParseStringRelaxed:" + err.Error())
 	}
 
-	var noTypeTags []aptos.TypeTag
-	viewResponse, err := client.View(&aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	var noTypeTags []solana.TypeTag
+	viewResponse, err := client.View(&solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contractAcc,
 			Name:    "fungible_asset",
 		},
@@ -43,7 +43,7 @@ func GetMetadata(
 	if err != nil {
 		panic("Failed to unmarshal metadata from json:" + err.Error())
 	}
-	metadataAcc := aptos.AccountAddress{}
+	metadataAcc := solana.AccountAddress{}
 	err = metadataAcc.ParseStringRelaxed(metadataStr.Inner)
 	if err != nil {
 		panic("Could not ParseStringRelaxed:" + err.Error())
@@ -56,17 +56,17 @@ func GetMetadata(
 }
 
 func FAMetdataClient(
-	client *aptos.Client,
-) *aptos.FungibleAssetClient {
-	contractAcc := aptos.AccountAddress{}
+	client *solana.Client,
+) *solana.FungibleAssetClient {
+	contractAcc := solana.AccountAddress{}
 	err := contractAcc.ParseStringRelaxed(FAContract)
 	if err != nil {
 		panic("Could not ParseStringRelaxed:" + err.Error())
 	}
 
-	var noTypeTags []aptos.TypeTag
-	viewResponse, err := client.View(&aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	var noTypeTags []solana.TypeTag
+	viewResponse, err := client.View(&solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contractAcc,
 			Name:    "fungible_asset",
 		},
@@ -89,13 +89,13 @@ func FAMetdataClient(
 	if err != nil {
 		panic("Failed to unmarshal metadata from json:" + err.Error())
 	}
-	metadataAcc := aptos.AccountAddress{}
+	metadataAcc := solana.AccountAddress{}
 	err = metadataAcc.ParseStringRelaxed(metadataStr.Inner)
 	if err != nil {
 		panic("Could not ParseStringRelaxed:" + err.Error())
 	}
 
-	faClient, err := aptos.NewFungibleAssetClient(client, &metadataAcc)
+	faClient, err := solana.NewFungibleAssetClient(client, &metadataAcc)
 	if err != nil {
 		panic("Failed to create fa client:" + err.Error())
 	}

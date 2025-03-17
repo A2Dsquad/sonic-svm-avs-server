@@ -4,8 +4,8 @@ import (
 	"math/big"
 	"sync"
 
-	aptos "github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/bcs"
+	solana "github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/bcs"
 	"go.uber.org/zap"
 )
 
@@ -23,12 +23,12 @@ type AccountConfig struct {
 type Aggregator struct {
 	logger            *zap.Logger
 	AvsAddress        string
-	AggregatorAccount aptos.Account
+	AggregatorAccount solana.Account
 	AggregatorConfig  AggregatorConfig
 	TaskQueue         chan Task
 	PendingTasks      map[uint64]TaskInfo
 	TaskMutex         sync.Mutex
-	Network           aptos.NetworkConfig
+	Network           solana.NetworkConfig
 }
 
 type TaskInfo struct {
@@ -73,7 +73,7 @@ func (u *U8Struct) MarshalBCS(ser *bcs.Serializer) {
 }
 
 type VecAddr struct {
-	Value []aptos.AccountAddress
+	Value []solana.AccountAddress
 }
 
 func (v *VecAddr) MarshalBCS(ser *bcs.Serializer) {
@@ -81,7 +81,7 @@ func (v *VecAddr) MarshalBCS(ser *bcs.Serializer) {
 }
 
 type Addr struct {
-	Value aptos.AccountAddress
+	Value solana.AccountAddress
 }
 
 func (v *Addr) MarshalBCS(ser *bcs.Serializer) {

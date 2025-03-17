@@ -3,18 +3,18 @@ package operator
 import (
 	"fmt"
 
-	aptos "github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/bcs"
+	solana "github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/bcs"
 	"go.uber.org/zap"
 )
 
-func DeregisterFromQuorum(logger *zap.Logger, networkConfig aptos.NetworkConfig, config OperatorConfig, operatorAccount *aptos.Account, quorum uint8) error {
-	client, err := aptos.NewClient(networkConfig)
+func DeregisterFromQuorum(logger *zap.Logger, networkConfig solana.NetworkConfig, config OperatorConfig, operatorAccount *solana.Account, quorum uint8) error {
+	client, err := solana.NewClient(networkConfig)
 	if err != nil {
 		panic("Failed to create client:" + err.Error())
 	}
 
-	contract := aptos.AccountAddress{}
+	contract := solana.AccountAddress{}
 	err = contract.ParseStringRelaxed(config.AvsAddress)
 	if err != nil {
 		panic("Failed to parse address:" + err.Error())
@@ -28,20 +28,20 @@ func DeregisterFromQuorum(logger *zap.Logger, networkConfig aptos.NetworkConfig,
 		},
 	}, quorumSerializer)
 
-	payload := aptos.EntryFunction{
-		Module: aptos.ModuleId{
+	payload := solana.EntryFunction{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "registry_coordinator",
 		},
 		Function: "deregister_operator",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			quorumSerializer.ToBytes(),
 		},
 	}
 	// Build transaction
 	rawTxn, err := client.BuildTransaction(operatorAccount.AccountAddress(),
-		aptos.TransactionPayload{Payload: &payload})
+		solana.TransactionPayload{Payload: &payload})
 	if err != nil {
 		panic("Failed to build transaction:" + err.Error())
 	}

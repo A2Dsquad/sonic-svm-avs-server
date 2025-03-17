@@ -7,8 +7,8 @@ import (
 	"avs/operator"
 	"os"
 
-	"github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/crypto"
+	"github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/crypto"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -103,27 +103,27 @@ func (signer *AlternativeSigner) AuthKey() *crypto.AuthenticationKey {
 	return authKey
 }
 
-func example(network aptos.NetworkConfig) {
-	client, err := aptos.NewClient(network)
+func example(network solana.NetworkConfig) {
+	client, err := solana.NewClient(network)
 	if err != nil {
 		panic("Failed to create client:" + err.Error())
 	}
 
-	sender, err := operator.SignerFromConfig(".aptos/config.yaml", "default")
-	contract := aptos.AccountAddress{}
+	sender, err := operator.SignerFromConfig(".solana/config.yaml", "default")
+	contract := solana.AccountAddress{}
 	err = contract.ParseStringRelaxed("0xc453ce803fb6f9720d7dec971c3ded0beb633c28e09ef2f5809e4964c9d5d8e2")
 	if err != nil {
 		panic("Failed to parse address:" + err.Error())
 	}
 
 	echo := "lmao"
-	payload := aptos.EntryFunction{
-		Module: aptos.ModuleId{
+	payload := solana.EntryFunction{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "lmao_echo",
 		},
 		Function: "echo",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			[]byte(echo),
 		},
@@ -131,7 +131,7 @@ func example(network aptos.NetworkConfig) {
 
 	// Build transaction
 	rawTxn, err := client.BuildTransaction(sender.AccountAddress(),
-		aptos.TransactionPayload{Payload: &payload})
+		solana.TransactionPayload{Payload: &payload})
 	if err != nil {
 		panic("Failed to build transaction:" + err.Error())
 	}
@@ -160,8 +160,8 @@ func example(network aptos.NetworkConfig) {
 
 // main This example shows you how to make an alternative signer for the SDK, if you prefer a different library
 func main() {
-	// example(aptos.DevnetConfig)
-	a, err := operator.SignerFromConfig(".aptos/config.yaml", "default")
+	// example(solana.DevnetConfig)
+	a, err := operator.SignerFromConfig(".solana/config.yaml", "default")
 	fmt.Println("a: ", a.Address.String())
 	fmt.Println("err: ", err)
 }

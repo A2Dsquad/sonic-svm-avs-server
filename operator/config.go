@@ -6,12 +6,12 @@ import (
 	"os"
 	"strings"
 
-	aptos "github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/crypto"
+	solana "github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/crypto"
 	"gopkg.in/yaml.v3"
 )
 
-type AptosConfig struct {
+type SolanaConfig struct {
 	Profiles map[string]Profile `yaml:"profiles"`
 }
 
@@ -24,13 +24,13 @@ type Profile struct {
 	FaucetURL  string `yaml:"faucet_url"`
 }
 
-func SignerFromConfig(path string, profile string) (*aptos.Account, error) {
+func SignerFromConfig(path string, profile string) (*solana.Account, error) {
 	yamlFile, err := os.ReadFile(path)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}
 
-	var aptosConfig AptosConfig
+	var aptosConfig SolanaConfig
 	err = yaml.Unmarshal(yamlFile, &aptosConfig)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
@@ -55,7 +55,7 @@ func SignerFromConfig(path string, profile string) (*aptos.Account, error) {
 		Inner: privateKey,
 	}
 	// Create the sender from the key locally
-	sender, err := aptos.NewAccountFromSigner(&priv)
+	sender, err := solana.NewAccountFromSigner(&priv)
 	if err != nil {
 		panic("Could not get account from signer:" + err.Error())
 	}

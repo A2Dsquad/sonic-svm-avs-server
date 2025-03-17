@@ -13,9 +13,9 @@ import (
 	"syscall"
 	"time"
 
-	aptos "github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/bcs"
-	"github.com/aptos-labs/aptos-go-sdk/crypto"
+	solana "github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/bcs"
+	"github.com/solana-labs/solana-go-sdk/crypto"
 	"go.uber.org/zap"
 )
 
@@ -62,9 +62,9 @@ func (op *Operator) Start(ctx context.Context) error {
 }
 
 func (op *Operator) FetchTasks(ctx context.Context) error {
-	client, err := aptos.NewClient(op.network)
+	client, err := solana.NewClient(op.network)
 	if err != nil {
-		return fmt.Errorf("failed to create aptos client: %v", err)
+		return fmt.Errorf("failed to create solana client: %v", err)
 	}
 
 	var taskCount uint64
@@ -90,9 +90,9 @@ func (op *Operator) FetchTasks(ctx context.Context) error {
 
 func (op *Operator) RespondTask(ctx context.Context) error {
 
-	client, err := aptos.NewClient(op.network)
+	client, err := solana.NewClient(op.network)
 	if err != nil {
-		return fmt.Errorf("failed to create aptos client: %v", err)
+		return fmt.Errorf("failed to create solana client: %v", err)
 	}
 	// TODO
 	for task := range op.TaskQueue {
@@ -138,7 +138,7 @@ func (op *Operator) RespondTask(ctx context.Context) error {
 	return nil
 }
 
-func GetMsgHash(client *aptos.Client, contract aptos.AccountAddress, taskId uint64, response big.Int) (string, error) {
+func GetMsgHash(client *solana.Client, contract solana.AccountAddress, taskId uint64, response big.Int) (string, error) {
 	taskIdBcs, err := bcs.SerializeU64(taskId)
 	if err != nil {
 		return "", fmt.Errorf("can not SerializeU64: %v", err)
@@ -148,13 +148,13 @@ func GetMsgHash(client *aptos.Client, contract aptos.AccountAddress, taskId uint
 	if err != nil {
 		return "", fmt.Errorf("can not SerializeU128: %v", err)
 	}
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "service_manager",
 		},
 		Function: "get_msg_hash",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			taskIdBcs, responseBcs,
 		},
@@ -167,7 +167,7 @@ func GetMsgHash(client *aptos.Client, contract aptos.AccountAddress, taskId uint
 	return task, nil
 }
 
-func (op *Operator) QueueTask(ctx context.Context, client *aptos.Client, start uint64, end uint64) error {
+func (op *Operator) QueueTask(ctx context.Context, client *solana.Client, start uint64, end uint64) error {
 	for i := start + 1; i <= end; i++ {
 		task, err := LoadTaskById(client, op.avsAddress, i)
 		if err != nil {
@@ -188,18 +188,18 @@ func (op *Operator) QueueTask(ctx context.Context, client *aptos.Client, start u
 	return nil
 }
 
-func LoadTaskById(client *aptos.Client, contract aptos.AccountAddress, taskId uint64) (map[string]interface{}, error) {
+func LoadTaskById(client *solana.Client, contract solana.AccountAddress, taskId uint64) (map[string]interface{}, error) {
 	taskIdBcs, err := bcs.SerializeU64(taskId)
 	if err != nil {
 		return nil, fmt.Errorf("can not SerializeU64: %v", err)
 	}
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "service_manager",
 		},
 		Function: "task_by_id",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			taskIdBcs,
 		},
@@ -212,14 +212,14 @@ func LoadTaskById(client *aptos.Client, contract aptos.AccountAddress, taskId ui
 	return task, nil
 }
 
-func LatestTaskCount(client *aptos.Client, contract aptos.AccountAddress) (uint64, error) {
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+func LatestTaskCount(client *solana.Client, contract solana.AccountAddress) (uint64, error) {
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "service_manager",
 		},
 		Function: "task_count",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args:     [][]byte{},
 	}
 

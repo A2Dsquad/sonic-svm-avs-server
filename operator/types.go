@@ -4,8 +4,8 @@ import (
 	"math/big"
 	"net/rpc"
 
-	aptos "github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/bcs"
+	solana "github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/bcs"
 	"go.uber.org/zap"
 
 	"github.com/Layr-Labs/eigensdk-go/crypto/bls"
@@ -17,13 +17,13 @@ type Config struct {
 
 type Operator struct {
 	logger  *zap.Logger
-	account *aptos.Account
-	// TODO: change this to aptos-sdk fork
+	account *solana.Account
+	// TODO: change this to solana-sdk fork
 	operatorId   []byte
-	avsAddress   aptos.AccountAddress
+	avsAddress   solana.AccountAddress
 	BlsPrivateKey        []byte
 	AggRpcClient AggregatorRpcClient
-	network      aptos.NetworkConfig
+	network      solana.NetworkConfig
 	TaskQueue    chan Task
 }
 
@@ -61,7 +61,7 @@ type MetadataStr struct {
 }
 
 type Metadata struct {
-	Inner aptos.AccountAddress
+	Inner solana.AccountAddress
 }
 
 type U128Struct struct {

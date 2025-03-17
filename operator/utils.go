@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	aptos "github.com/aptos-labs/aptos-go-sdk"
+	solana "github.com/solana-labs/solana-go-sdk"
 )
 
 func loadConfig(filename string) (*Config, error) {
@@ -57,18 +57,18 @@ func loadOperatorConfig(filename string) (*OperatorConfig, error) {
 	return &config, nil
 }
 
-func extractNetwork(network string) (aptos.NetworkConfig, error) {
+func extractNetwork(network string) (solana.NetworkConfig, error) {
 	switch network {
 	case "devnet":
-		return aptos.DevnetConfig, nil
+		return solana.DevnetConfig, nil
 	case "localnet":
-		return aptos.LocalnetConfig, nil
+		return solana.LocalnetConfig, nil
 	case "testnet":
-		return aptos.TestnetConfig, nil
+		return solana.TestnetConfig, nil
 	case "mainnet":
-		return aptos.MainnetConfig, nil
+		return solana.MainnetConfig, nil
 	default:
-		return aptos.NetworkConfig{}, fmt.Errorf("Choose one of: mainnet, testnet, devnet, localnet")
+		return solana.NetworkConfig{}, fmt.Errorf("Choose one of: mainnet, testnet, devnet, localnet")
 	}
 
 }

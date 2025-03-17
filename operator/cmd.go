@@ -12,13 +12,13 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	aptos "github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/crypto"
+	solana "github.com/solana-labs/solana-go-sdk"
+	"github.com/solana-labs/solana-go-sdk/crypto"
 )
 
 const (
-	flagAptosNetwork      = "aptos-network"
-	flagAptosConfigPath   = "aptos-config"
+	flagSolanaNetwork      = "solana-network"
+	flagSolanaConfigPath   = "solana-config"
 	flagAvsOperatorConfig = "avs-operator-config"
 	flagAccountProfile    = "account-profile"
 )
@@ -75,7 +75,7 @@ func CreateOperatorConfig(logger *zap.Logger) *cobra.Command {
 				return fmt.Errorf("unable to generate bls keys: %s", err)
 			}
 
-			avsAddress := aptos.AccountAddress{}
+			avsAddress := solana.AccountAddress{}
 			if err := avsAddress.ParseStringRelaxed(args[0]); err != nil {
 				return fmt.Errorf("failed to parse avs address: %s", err)
 			}
@@ -113,17 +113,17 @@ func InitializeQuorum(logger *zap.Logger) *cobra.Command {
 		Short: "initialize-quorum",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			aptosPath, err := cmd.Flags().GetString(flagAptosConfigPath)
+			aptosPath, err := cmd.Flags().GetString(flagSolanaConfigPath)
 			if err != nil {
-				return errors.Wrap(err, flagAptosConfigPath)
+				return errors.Wrap(err, flagSolanaConfigPath)
 			}
 			accountProfile, err := cmd.Flags().GetString(flagAccountProfile)
 			if err != nil {
 				return errors.Wrap(err, flagAccountProfile)
 			}
-			network, err := cmd.Flags().GetString(flagAptosNetwork)
+			network, err := cmd.Flags().GetString(flagSolanaNetwork)
 			if err != nil {
-				return errors.Wrap(err, flagAptosNetwork)
+				return errors.Wrap(err, flagSolanaNetwork)
 			}
 			operatorConfigPath, err := cmd.Flags().GetString(flagAvsOperatorConfig)
 			if err != nil {
@@ -153,7 +153,7 @@ func InitializeQuorum(logger *zap.Logger) *cobra.Command {
 			err = InitQuorum(
 				networkConfig,
 				*operatorConfig,
-				AptosAccountConfig{
+				SolanaAccountConfig{
 					configPath: aptosPath,
 					profile:    accountProfile,
 				},
@@ -163,9 +163,9 @@ func InitializeQuorum(logger *zap.Logger) *cobra.Command {
 			return err
 		},
 	}
-	cmd.Flags().String(flagAptosConfigPath, ".aptos/config.yaml", "the path to your operator priv and pub key")
+	cmd.Flags().String(flagSolanaConfigPath, ".solana/config.yaml", "the path to your operator priv and pub key")
 	cmd.Flags().String(flagAccountProfile, "default", "the account profile to use")
-	cmd.Flags().String(flagAptosNetwork, "devnet", "choose network to connect to: mainnet, testnet, devnet, localnet")
+	cmd.Flags().String(flagSolanaNetwork, "devnet", "choose network to connect to: mainnet, testnet, devnet, localnet")
 	cmd.Flags().String(flagAvsOperatorConfig, "config/operator-config.json", "see the example at config/example.json")
 	return cmd
 }
@@ -176,17 +176,17 @@ func Deregister(logger *zap.Logger) *cobra.Command {
 		Short: "deregister",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			aptosPath, err := cmd.Flags().GetString(flagAptosConfigPath)
+			aptosPath, err := cmd.Flags().GetString(flagSolanaConfigPath)
 			if err != nil {
-				return errors.Wrap(err, flagAptosConfigPath)
+				return errors.Wrap(err, flagSolanaConfigPath)
 			}
 			accountProfile, err := cmd.Flags().GetString(flagAccountProfile)
 			if err != nil {
 				return errors.Wrap(err, flagAccountProfile)
 			}
-			network, err := cmd.Flags().GetString(flagAptosNetwork)
+			network, err := cmd.Flags().GetString(flagSolanaNetwork)
 			if err != nil {
-				return errors.Wrap(err, flagAptosNetwork)
+				return errors.Wrap(err, flagSolanaNetwork)
 			}
 			operatorConfigPath, err := cmd.Flags().GetString(flagAvsOperatorConfig)
 			if err != nil {
@@ -221,9 +221,9 @@ func Deregister(logger *zap.Logger) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().String(flagAptosConfigPath, ".aptos/config.yaml", "the path to your operator priv and pub key")
+	cmd.Flags().String(flagSolanaConfigPath, ".solana/config.yaml", "the path to your operator priv and pub key")
 	cmd.Flags().String(flagAccountProfile, "default", "the account profile to use")
-	cmd.Flags().String(flagAptosNetwork, "devnet", "choose network to connect to: mainnet, testnet, devnet, localnet")
+	cmd.Flags().String(flagSolanaNetwork, "devnet", "choose network to connect to: mainnet, testnet, devnet, localnet")
 	cmd.Flags().String(flagAvsOperatorConfig, "config/operator-config.json", "see the example at config/example.json")
 	return cmd
 }
@@ -235,17 +235,17 @@ func Start(logger *zap.Logger) *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Get all the flags
-			aptosPath, err := cmd.Flags().GetString(flagAptosConfigPath)
+			aptosPath, err := cmd.Flags().GetString(flagSolanaConfigPath)
 			if err != nil {
-				return errors.Wrap(err, flagAptosConfigPath)
+				return errors.Wrap(err, flagSolanaConfigPath)
 			}
 			accountProfile, err := cmd.Flags().GetString(flagAccountProfile)
 			if err != nil {
 				return errors.Wrap(err, flagAccountProfile)
 			}
-			network, err := cmd.Flags().GetString(flagAptosNetwork)
+			network, err := cmd.Flags().GetString(flagSolanaNetwork)
 			if err != nil {
-				return errors.Wrap(err, flagAptosNetwork)
+				return errors.Wrap(err, flagSolanaNetwork)
 			}
 			operatorConfigPath, err := cmd.Flags().GetString(flagAvsOperatorConfig)
 			if err != nil {
@@ -265,7 +265,7 @@ func Start(logger *zap.Logger) *cobra.Command {
 				logger,
 				networkConfig,
 				*operatorConfig,
-				AptosAccountConfig{
+				SolanaAccountConfig{
 					configPath: aptosPath,
 					profile:    accountProfile,
 				},
@@ -281,9 +281,9 @@ func Start(logger *zap.Logger) *cobra.Command {
 			// client.SubmitTransaction()
 		},
 	}
-	cmd.Flags().String(flagAptosConfigPath, ".aptos/config.yaml", "the path to your operator priv and pub key")
+	cmd.Flags().String(flagSolanaConfigPath, ".solana/config.yaml", "the path to your operator priv and pub key")
 	cmd.Flags().String(flagAccountProfile, "default", "the account profile to use")
-	cmd.Flags().String(flagAptosNetwork, "devnet", "choose network to connect to: mainnet, testnet, devnet, localnet")
+	cmd.Flags().String(flagSolanaNetwork, "devnet", "choose network to connect to: mainnet, testnet, devnet, localnet")
 	cmd.Flags().String(flagAvsOperatorConfig, "config/operator-config.json", "see the example at config/example.json")
 	return cmd
 }

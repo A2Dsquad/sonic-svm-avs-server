@@ -5,39 +5,37 @@ import (
 	"log"
 	"math/big"
 
-	aptos "github.com/aptos-labs/aptos-go-sdk"
-	"github.com/aptos-labs/aptos-go-sdk/bcs"
-	"github.com/aptos-labs/aptos-go-sdk/crypto"
+	solana "github.com/gagliardetto/solana-go"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"go.uber.org/zap"
 )
 
-type AptosAccountConfig struct {
+type SolanaAccountConfig struct {
 	configPath string
 	profile    string
 }
 
-func AptosClient(networkConfig aptos.NetworkConfig) *aptos.Client {
-	// Create a client for Aptos
-	client, err := aptos.NewClient(networkConfig)
+func SolanaClient(networkConfig solana.NetworkConfig) *solana.Client {
+	// Create a client for Solana
+	client, err := solana.NewClient(networkConfig)
 	if err != nil {
 		panic("Failed to create client:" + err.Error())
 	}
 	return client
 }
 
-func NewOperator(logger *zap.Logger, networkConfig aptos.NetworkConfig, config OperatorConfig, accountConfig AptosAccountConfig, blsPriv []byte) (*Operator, error) {
+func NewOperator(logger *zap.Logger, networkConfig solana.NetworkConfig, config OperatorConfig, accountConfig SolanaAccountConfig, blsPriv []byte) (*Operator, error) {
 	operatorAccount, err := SignerFromConfig(accountConfig.configPath, accountConfig.profile)
 	if err != nil {
 		panic("Failed to create operator account:" + err.Error())
 	}
-	client, err := aptos.NewClient(networkConfig)
+	client, err := solana.NewClient(networkConfig)
 	if err != nil {
 		panic("Failed to create client:" + err.Error())
 	}
 
 	// Get operator Status
-	avsAddress := aptos.AccountAddress{}
+	avsAddress := solana.AccountAddress{}
 	if err := avsAddress.ParseStringRelaxed(config.AvsAddress); err != nil {
 		panic("Failed to parse avsAddress:" + err.Error())
 	}
@@ -113,18 +111,18 @@ func NewOperator(logger *zap.Logger, networkConfig aptos.NetworkConfig, config O
 }
 
 func InitQuorum(
-	networkConfig aptos.NetworkConfig,
+	networkConfig solana.NetworkConfig,
 	config OperatorConfig,
-	accountConfig AptosAccountConfig,
+	accountConfig SolanaAccountConfig,
 	maxOperatorCount uint32,
 	minimumStake big.Int,
 ) error {
-	client, err := aptos.NewClient(networkConfig)
+	client, err := solana.NewClient(networkConfig)
 	if err != nil {
 		panic("Failed to create client:" + err.Error())
 	}
 
-	accAddress := aptos.AccountAddress{}
+	accAddress := solana.AccountAddress{}
 	err = accAddress.ParseStringRelaxed("0x603053371d0eec6befaf41489f506b7b3e8e31dbca3d9b9c5cb92bb308dc2eec")
 	if err != nil {
 		panic("Failed to parse account address " + err.Error())
@@ -148,7 +146,7 @@ func InitQuorum(
 	metadataAddr := GetMetadata(client).Inner
 
 	strategiesSerializer := &bcs.Serializer{}
-	bcs.SerializeSequence([]aptos.AccountAddress{metadataAddr}, strategiesSerializer)
+	bcs.SerializeSequence([]solana.AccountAddress{metadataAddr}, strategiesSerializer)
 
 	multiplier := new(big.Int)
 	multiplier.SetString("10000000", 10)
@@ -159,25 +157,25 @@ func InitQuorum(
 	}}, multipliersSerializer)
 
 	// Get operator Status
-	avsAddress := aptos.AccountAddress{}
+	avsAddress := solana.AccountAddress{}
 	if err := avsAddress.ParseStringRelaxed(config.AvsAddress); err != nil {
 		panic("Failed to parse avsAddress:" + err.Error())
 	}
 
-	payload := aptos.EntryFunction{
-		Module: aptos.ModuleId{
+	payload := solana.EntryFunction{
+		Module: solana.ModuleId{
 			Address: avsAddress,
 			Name:    "registry_coordinator",
 		},
 		Function: "create_quorum",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			maxOperatorCountBz, minimumStakeBz, strategiesSerializer.ToBytes(), multipliersSerializer.ToBytes(),
 		},
 	}
 	// Build transaction
 	rawTxn, err := client.BuildTransaction(operatorAccount.AccountAddress(),
-		aptos.TransactionPayload{Payload: &payload})
+		solana.TransactionPayload{Payload: &payload})
 	if err != nil {
 		panic("Failed to build transaction:" + err.Error())
 	}
@@ -209,14 +207,14 @@ func InitQuorum(
 	}
 	return nil
 }
-func QuorumCount(client *aptos.Client, contract aptos.AccountAddress) uint8 {
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+func QuorumCount(client *solana.Client, contract solana.AccountAddress) uint8 {
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "registry_coordinator",
 		},
 		Function: "quorum_count",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args:     [][]byte{},
 	}
 
@@ -228,8 +226,8 @@ func QuorumCount(client *aptos.Client, contract aptos.AccountAddress) uint8 {
 	return uint8(count)
 }
 
-func IsOperatorRegistered(client *aptos.Client, contract aptos.AccountAddress, operator_addr string) bool {
-	account := aptos.AccountAddress{}
+func IsOperatorRegistered(client *solana.Client, contract solana.AccountAddress, operator_addr string) bool {
+	account := solana.AccountAddress{}
 	err := account.ParseStringRelaxed(operator_addr)
 	if err != nil {
 		panic("Could not ParseStringRelaxed:" + err.Error())
@@ -238,13 +236,13 @@ func IsOperatorRegistered(client *aptos.Client, contract aptos.AccountAddress, o
 	if err != nil {
 		panic("Could not serialize operator address:" + err.Error())
 	}
-	payload := &aptos.ViewPayload{
-		Module: aptos.ModuleId{
+	payload := &solana.ViewPayload{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "registry_coordinator",
 		},
 		Function: "get_operator_status",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			operator,
 		},
@@ -259,15 +257,15 @@ func IsOperatorRegistered(client *aptos.Client, contract aptos.AccountAddress, o
 }
 
 func RegisterOperator(
-	client *aptos.Client,
-	operatorAccount *aptos.Account,
+	client *solana.Client,
+	operatorAccount *solana.Account,
 	contractAddr string,
 	quorumNumbers uint8,
 	signature []byte,
 	pubkey []byte,
 	proofPossession []byte,
 ) error {
-	contract := aptos.AccountAddress{}
+	contract := solana.AccountAddress{}
 	err := contract.ParseStringRelaxed(contractAddr)
 	if err != nil {
 		panic("Failed to parse address:" + err.Error())
@@ -291,20 +289,20 @@ func RegisterOperator(
 	if err != nil {
 		panic("Failed to bcs serialize proof of possession:" + err.Error())
 	}
-	payload := aptos.EntryFunction{
-		Module: aptos.ModuleId{
+	payload := solana.EntryFunction{
+		Module: solana.ModuleId{
 			Address: contract,
 			Name:    "registry_coordinator",
 		},
 		Function: "registor_operator",
-		ArgTypes: []aptos.TypeTag{},
+		ArgTypes: []solana.TypeTag{},
 		Args: [][]byte{
 			quorumSerializer.ToBytes(), sig, pk, pop,
 		},
 	}
 	// Build transaction
 	rawTxn, err := client.BuildTransaction(operatorAccount.AccountAddress(),
-		aptos.TransactionPayload{Payload: &payload})
+		solana.TransactionPayload{Payload: &payload})
 	if err != nil {
 		panic("Failed to build transaction:" + err.Error())
 	}
