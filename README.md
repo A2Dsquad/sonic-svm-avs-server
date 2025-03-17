@@ -52,6 +52,10 @@ For each AVS, all of its operators have to interface through a middleware layer 
 
 ![alt text](consensus.png)
 
+### AVS in bridging
+
+![alt text](bridge-light.png)
+
 ## Structure
 
 ### Operator
