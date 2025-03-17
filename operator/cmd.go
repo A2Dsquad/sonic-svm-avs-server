@@ -113,7 +113,7 @@ func InitializeQuorum(logger *zap.Logger) *cobra.Command {
 		Short: "initialize-quorum",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			aptosPath, err := cmd.Flags().GetString(flagSolanaConfigPath)
+			solanaPath, err := cmd.Flags().GetString(flagSolanaConfigPath)
 			if err != nil {
 				return errors.Wrap(err, flagSolanaConfigPath)
 			}
@@ -154,7 +154,7 @@ func InitializeQuorum(logger *zap.Logger) *cobra.Command {
 				networkConfig,
 				*operatorConfig,
 				SolanaAccountConfig{
-					configPath: aptosPath,
+					configPath: solanaPath,
 					profile:    accountProfile,
 				},
 				uint32(maxOperatorCount),
@@ -176,7 +176,7 @@ func Deregister(logger *zap.Logger) *cobra.Command {
 		Short: "deregister",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			aptosPath, err := cmd.Flags().GetString(flagSolanaConfigPath)
+			solanaPath, err := cmd.Flags().GetString(flagSolanaConfigPath)
 			if err != nil {
 				return errors.Wrap(err, flagSolanaConfigPath)
 			}
@@ -209,7 +209,7 @@ func Deregister(logger *zap.Logger) *cobra.Command {
 
 			quorum := uint8(quorum64)
 
-			operatorAccount, err := SignerFromConfig(aptosPath, accountProfile)
+			operatorAccount, err := SignerFromConfig(solanaPath, accountProfile)
 			if err != nil {
 				panic("Failed to create operator account:" + err.Error())
 			}
@@ -235,7 +235,7 @@ func Start(logger *zap.Logger) *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Get all the flags
-			aptosPath, err := cmd.Flags().GetString(flagSolanaConfigPath)
+			solanaPath, err := cmd.Flags().GetString(flagSolanaConfigPath)
 			if err != nil {
 				return errors.Wrap(err, flagSolanaConfigPath)
 			}
@@ -266,7 +266,7 @@ func Start(logger *zap.Logger) *cobra.Command {
 				networkConfig,
 				*operatorConfig,
 				SolanaAccountConfig{
-					configPath: aptosPath,
+					configPath: solanaPath,
 					profile:    accountProfile,
 				},
 				operatorConfig.BlsPrivateKey,

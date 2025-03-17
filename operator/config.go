@@ -30,14 +30,14 @@ func SignerFromConfig(path string, profile string) (*solana.Account, error) {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}
 
-	var aptosConfig SolanaConfig
-	err = yaml.Unmarshal(yamlFile, &aptosConfig)
+	var solanaConfig SolanaConfig
+	err = yaml.Unmarshal(yamlFile, &solanaConfig)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
 	}
 
-	trimmedPriv := strings.TrimPrefix(aptosConfig.Profiles[profile].PrivateKey, "0x")
-	trimmedPub := strings.TrimPrefix(aptosConfig.Profiles[profile].PublicKey, "0x")
+	trimmedPriv := strings.TrimPrefix(solanaConfig.Profiles[profile].PrivateKey, "0x")
+	trimmedPub := strings.TrimPrefix(solanaConfig.Profiles[profile].PublicKey, "0x")
 
 	privateKeyBytes, err := hex.DecodeString(trimmedPriv)
 	if err != nil {

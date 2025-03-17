@@ -1,6 +1,6 @@
 # Stake-Pool Python Bindings
 
-Preliminary Python bindings to interact with the stake pool program, enabling
+Preliminary Python bindings to interact with the restaking program, enabling
 simple stake delegation bots.
 
 ## To do
@@ -39,10 +39,6 @@ Testing through `pytest`:
 $ python3 -m pytest
 ```
 
-Note: the tests all run against a `solana-test-validator` with short epochs of 64
-slots (25.6 seconds exactly). Some tests wait for epoch changes, so they take
-time, roughly 90 seconds total at the time of this writing.
-
 ### Formatting
 
 ```
@@ -64,5 +60,5 @@ uniform, while also maintaining some SOL in the reserve if desired. Can be run
 with the stake pool address, staker keypair, and SOL to leave in the reserve:
 
 ```
-$ python3 bot/rebalance.py Zg5YBPAk8RqBR9kaLLSoN5C8Uv7nErBz1WC63HTsCPR staker.json 10.5
+$ python3 bot/rebalance.py <restaking pool address> staker.json 10.5
 ```
